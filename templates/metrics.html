@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OpenRouter Proxy Metrics</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .metrics-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .metrics-table th, .metrics-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .metrics-table th {
+            background-color: #f8f9fa;
+            position: sticky;
+            top: 0;
+        }
+        .metrics-table tr:nth-child(even) { background-color: #f9f9f9; }
+        .metrics-table tr:hover { background-color: #f1f1f1; }
+        .metric-value { font-family: monospace; }
+        .section { margin-bottom: 30px; }
+        .raw-link { 
+            display: inline-block;
+            margin-top: 20px;
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <h1>OpenRouter Proxy Metrics</h1>
+    
+    <div class="section">
+        <h2>System Resources</h2>
+        <table class="metrics-table">
+            <tr><th>Metric</th><th>Value</th></tr>
+            <tr><td>CPU Usage</td><td class="metric-value">{{ cpu_usage }}%</td></tr>
+            <tr><td>Memory Usage</td><td class="metric-value">{{ memory_usage }}%</td></tr>
+        </table>
+    </div>
+    
+    <div class="section">
+        <h2>API Keys</h2>
+        <table class="metrics-table">
+            <tr><th>Metric</th><th>Value</th></tr>
+            <tr><td>Active Keys</td><td class="metric-value">{{ active_keys }}</td></tr>
+            <tr><td>Keys in Cooldown</td><td class="metric-value">{{ cooldown_keys }}</td></tr>
+        </table>
+    </div>
+    
+    <div class="section">
+        <h2>Token Statistics</h2>
+        <table class="metrics-table">
+            <tr><th>Metric</th><th>Value</th></tr>
+            <tr><td>Tokens Sent</td><td class="metric-value">{{ tokens_sent }}</td></tr>
+            <tr><td>Tokens Received</td><td class="metric-value">{{ tokens_received }}</td></tr>
+        </table>
+    </div>
+    
+    <div class="section">
+        <h2>All Prometheus Metrics</h2>
+        <pre>{{ raw_metrics }}</pre>
+    </div>
+    
+    <a href="/metrics/raw" class="raw-link">View raw Prometheus format</a>
+</body>
+</html>

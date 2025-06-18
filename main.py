@@ -21,9 +21,13 @@ except ImportError:
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, Response
 from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi.templating import Jinja2Templates
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 
 from src.shared.config import config, logger
+
+# Setup Jinja2 templates
+templates = Jinja2Templates(directory="templates")
 from src.shared.utils import get_local_ip
 from src.shared.metrics import (
     CPU_USAGE, MEMORY_USAGE, ACTIVE_KEYS, COOLDOWN_KEYS, TOKENS_SENT, TOKENS_RECEIVED

@@ -8,3 +8,4 @@ cachetools~=5.3.1
 prometheus-client~=0.20.0
 pydantic~=1.10.14  # Pure Python implementation
 python-dotenv~=1.0.0
+Jinja2~=3.1.2
