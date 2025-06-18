@@ -40,7 +40,7 @@ from metrics import (
 async def lifespan(app: FastAPI):
     """Manage application lifespan resources."""
     proxy_url = config["requestProxy"].get("url") if config["requestProxy"].get("enabled") else None
-    app.state.http_client = httpx.AsyncClient(timeout=600.0, proxy=proxy_url)
+    app.state.http_client = httpx.AsyncClient(timeout=600.0, proxies=proxy_url)
     app.state.key_manager = KeyManager(
         keys=config["openrouter"]["keys"],
         cooldown_seconds=config["openrouter"]["rate_limit_cooldown"],
