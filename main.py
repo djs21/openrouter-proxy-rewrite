@@ -223,7 +223,7 @@ if __name__ == "__main__":
     kms_process = multiprocessing.Process(
         target=uvicorn.run,
         kwargs={
-            "app": "key_management_service:app",
+            "app": "src.services.kms_app:app",
             "host": kms_host,
             "port": kms_port,
             "log_level": config["server"]["log_level"].lower()
