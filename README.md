@@ -84,12 +84,11 @@ openrouter:
   key_selection_strategy: "round-robin"
   # Options: ["same"] to prefer last used key
   key_selection_opts: [] 
-  google_rate_delay: 0 # Delay (seconds) for handling Google API's RESOURCE_EXHAUSTED errors
 
   # When keys get rate limited
   rate_limit_cooldown: 14400 # 4 hours
   free_only: false # Only show free models
-  google_rate_delay: 0 # Delay for Google API issues
+  google_rate_delay: 0 # Delay (seconds) for handling Google API's RESOURCE_EXHAUSTED errors
 
 # Outgoing proxy configuration
 requestProxy:
