@@ -29,7 +29,7 @@ from utils import get_local_ip
 
 # Setup Jinja2 templates
 templates = Jinja2Templates(directory="templates")
-from src.shared.metrics import (
+from metrics import (
     CPU_USAGE, MEMORY_USAGE, ACTIVE_KEYS, COOLDOWN_KEYS, TOKENS_SENT, TOKENS_RECEIVED
 )
 from src.services.key_manager import KeyManager
