@@ -65,33 +65,25 @@ from src.features.disable_key.endpoints import router as disable_key_router
 from src.features.kms_metrics.endpoints import router as kms_metrics_router
 from src.features.list_models.endpoints import router as list_models_router
 from src.features.proxy_chat.endpoints import router as proxy_chat_router
+from src.features.health_check.endpoints import router as health_check_router
 
 app.include_router(list_models_router, prefix="/api/v1", tags=["Proxy"])
 app.include_router(proxy_chat_router, prefix="/api/v1", tags=["Proxy"])
 app.include_router(get_next_key_router, prefix="/api/v1/kms", tags=["KMS"])
 app.include_router(disable_key_router, prefix="/api/v1/kms", tags=["KMS"])
 app.include_router(kms_metrics_router, prefix="/api/v1/kms", tags=["KMS"])
+app.include_router(health_check_router, tags=["Monitoring"])
 
 # Metrics endpoint with HTML dashboard
 @app.get("/metrics", response_class=HTMLResponse)
 async def metrics(request: Request):
     """Returns metrics in HTML table format by default"""
-    # Update system metrics if enabled and psutil available
-    if config["server"].get("enable_system_metrics", False):
-        if PSUTIL_AVAILABLE:
-            CPU_USAGE.set(psutil.cpu_percent())
-            MEMORY_USAGE.set(psutil.virtual_memory().percent)
-        else:
-            logger.warning("System metrics enabled but psutil not installed. Run 'pip install psutil' to enable CPU/memory monitoring.")
-    
-    # Get local Prometheus metrics
-    metrics_data = generate_latest().decode('utf-8')
-    
-    # Update KMS metrics directly from the state manager
+    if config["server"].get("enable_system_metrics", False) and PSUTIL_AVAILABLE:
+        CPU_USAGE.set(psutil.cpu_percent())
+        MEMORY_USAGE.set(psutil.virtual_memory().percent)
+
     key_manager: KeyManager = request.app.state.key_manager
     key_manager.update_metrics()
-
-    # Re-generate metrics data after update
     metrics_data = generate_latest().decode('utf-8')
     
     context = {
@@ -106,7 +98,6 @@ async def metrics(request: Request):
     }
     return templates.TemplateResponse("metrics.html", context)
 
-# Raw metrics endpoint
 @app.get("/metrics/raw")
 async def metrics_raw():
     """Returns raw Prometheus format"""
@@ -115,7 +106,6 @@ async def metrics_raw():
         media_type=CONTENT_TYPE_LATEST
     )
 
-# Request ID middleware
 class RequestIDMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         request.state.request_id = request.headers.get('X-Request-ID', str(uuid.uuid4()))
@@ -125,7 +115,6 @@ class RequestIDMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(RequestIDMiddleware)
 
-# Request timing middleware
 @app.middleware("http")
 async def add_process_time(request: Request, call_next):
     start_time = time.time()
@@ -133,7 +122,6 @@ async def add_process_time(request: Request, call_next):
     process_time = time.time() - start_time
     response.headers["X-Process-Time"] = str(process_time)
     
-    # Remove duplicate headers that might be added by downstream
     if "date" in response.headers:
         del response.headers["date"]
     
@@ -149,11 +137,6 @@ async def add_process_time(request: Request, call_next):
     )
     return response
 
-# Entry point
-import multiprocessing
-import subprocess
-import time
-
 if __name__ == "__main__":
     if not config["openrouter"]["keys"]:
         logger.error("No OpenRouter API keys found in config.yml or OPENROUTER_KEYS environment variable. Exiting.")
@@ -167,7 +150,6 @@ if __name__ == "__main__":
     logger.warning("API URL: http://%s:%s/api/v1", display_host, port)
     logger.warning("Metrics: http://%s:%s/metrics", display_host, port)
     
-    # HTTP access logs configuration
     log_config = uvicorn.config.LOGGING_CONFIG
     http_log_level = config["server"].get("http_log_level", "INFO").upper()
     log_config["loggers"]["uvicorn.access"]["level"] = http_log_level
