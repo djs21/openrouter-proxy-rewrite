@@ -71,15 +71,20 @@ app.include_router(health_check_router, tags=["Monitoring"])
 
 # Metrics endpoint with HTML dashboard
 @app.get("/metrics", response_class=HTMLResponse)
-async def metrics(request: Request):
+async def metrics():
     """Returns metrics in HTML table format by default"""
     if config["server"].get("enable_system_metrics", False) and PSUTIL_AVAILABLE:
         CPU_USAGE.set(psutil.cpu_percent())
         MEMORY_USAGE.set(psutil.virtual_memory().percent)
 
-    key_manager: KeyManager = request.app.state.key_manager
+    # We need to get the key_manager from app state
+    key_manager: KeyManager = app.state.key_manager
     key_manager.update_metrics()
     metrics_data = generate_latest().decode('utf-8')
+    
+    # Since we removed the request parameter, we use a dummy one for the template
+    from fastapi import Request
+    request = Request(scope={'type': 'http'})
     
     context = {
         "request": request,

@@ -5,5 +5,5 @@ from .query import HealthCheckResponse
 router = APIRouter()
 
 @router.get("/health", response_model=HealthCheckResponse, tags=["Monitoring"])
-async def health_check(handler: HealthCheckHandler = Depends()):
+async def health_check(handler = Depends()) -> HealthCheckResponse:
     return await handler.handle()

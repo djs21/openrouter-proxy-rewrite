@@ -6,6 +6,6 @@ router = APIRouter()
 
 @router.get("/models", response_model=ListModelsResponse)
 async def list_models(
-    handler: ListModelsHandler = Depends()
-):
+    handler = Depends()
+) -> ListModelsResponse:
     return await handler.handle()
