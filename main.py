@@ -24,7 +24,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.templating import Jinja2Templates
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 
-from src.shared.config import config, logger
+from config import config, logger
 
 # Setup Jinja2 templates
 templates = Jinja2Templates(directory="templates")
@@ -33,6 +33,7 @@ from src.shared.metrics import (
     CPU_USAGE, MEMORY_USAGE, ACTIVE_KEYS, COOLDOWN_KEYS, TOKENS_SENT, TOKENS_RECEIVED
 )
 from src.services.key_manager import KeyManager
+from constants import MODELS_ENDPOINTS
 
 
 @asynccontextmanager
