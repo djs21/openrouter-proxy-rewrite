@@ -5,7 +5,8 @@ by rotating through multiple API keys in a round-robin fashion.
 
 ## Features
 
-- **HTTP Compliance**: Full HTTP/1.1 spec compliance with proper chunked encoding
+- **HTTP Compliance**: Full HTTP/1.1 spec compliance with proper chunked encoding (fixed header conflicts)
+- **Robust Dependency Injection**: Updated to resolve FastAPI validation errors
 - **Enhanced Metrics Dashboard**: Detailed monitoring at `/metrics` showing:
   - Token statistics (sent/received)
   - Model endpoint caching status
@@ -82,7 +83,8 @@ openrouter:
   # Key selection strategy: "round-robin" (default), "first" or "random".
   key_selection_strategy: "round-robin"
   # Options: ["same"] to prefer last used key
-  key_selection_opts: []
+  key_selection_opts: [] 
+  google_rate_delay: 0 # Delay (seconds) for handling Google API's RESOURCE_EXHAUSTED errors
 
   # When keys get rate limited
   rate_limit_cooldown: 14400 # 4 hours
