@@ -118,6 +118,29 @@ async def metrics(request: Request):
     <!DOCTYPE html>
     <html lang="en">
     <head>
+        <meta charset="UTF-8">
+        <title>OpenRouter Proxy Metrics</title>
+    </head>
+    <body>
+        <h1>OpenRouter Proxy Metrics</h1>
+        <h2>Key Metrics</h2>
+        <table>
+            <tr><th>Metric</th><th>Value</th></tr>
+            <tr><td>CPU Usage</td><td>{CPU_USAGE._value.get() if PSUTIL_AVAILABLE else 'N/A'}%</td></tr>
+            <tr><td>Memory Usage</td><td>{MEMORY_USAGE._value.get() if PSUTIL_AVAILABLE else 'N/A'}%</td></tr>
+            <tr><td>Active API Keys</td><td>{ACTIVE_KEYS._value.get()}</td></tr>
+            <tr><td>Cooldown API Keys</td><td>{COOLDOWN_KEYS._value.get()}</td></tr>
+            <tr><td>Tokens Sent</td><td>{TOKENS_SENT._value.get()}</td></tr>
+            <tr><td>Tokens Received</td><td>{TOKENS_RECEIVED._value.get()}</td></tr>
+        </table>
+        <h2><a href="/metrics/raw">Raw Prometheus Metrics</a></h2>
+        <pre>{metrics_data}</pre>
+    </body>
+    </html>
+    """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
         <title>OpenRouter Proxy Metrics</title>
         <style>
             body {{ font-family: Arial, sans-serif; margin: 20px; }}
