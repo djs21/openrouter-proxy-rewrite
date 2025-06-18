@@ -1,13 +1,11 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends
 from .query import ListModelsResponse
 from .handler import ListModelsHandler
-from httpx import AsyncClient
 
 router = APIRouter()
 
 @router.get("/models", response_model=ListModelsResponse)
 async def list_models(
-    request: Request,
-    handler: ListModelsHandler = Depends(ListModelsHandler)
+    handler: ListModelsHandler = Depends()
 ):
     return await handler.handle()
