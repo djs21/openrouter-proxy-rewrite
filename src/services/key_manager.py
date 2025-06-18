@@ -9,9 +9,9 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 from fastapi import HTTPException
 
-from src.shared.config import config, logger
-from src.shared.utils import mask_key
-from src.shared.metrics import ACTIVE_KEYS, COOLDOWN_KEYS
+from config import config, logger
+from utils import mask_key
+from metrics import ACTIVE_KEYS, COOLDOWN_KEYS
 
 class KeyManager:
     """Manages OpenRouter API keys, including rotation and rate limit handling."""
