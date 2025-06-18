@@ -1,0 +1,55 @@
+# OpenRouter Proxy - Production Configuration
+
+# Server settings
+server:
+  host: "0.0.0.0"  # Bind to all interfaces
+  port: 5555        # Listen port
+  
+  # IMPORTANT: Use a strong access key - this protects your proxy
+  access_key: "your_local_access_key_here"  # Auth for proxy access
+  log_level: "INFO"  # App log level (DEBUG, INFO, WARNING, ERROR)
+  http_log_level: "INFO"  # HTTP logs level
+  enable_system_metrics: false  # Set true for CPU/Memory stats (requires psutil)
+
+# OpenRouter API settings
+openrouter:
+  keys:
+    - "sk-or-v1-valid-api-key-1"  # Must start with 'sk-or-'
+    - "sk-or-v1-valid-api-key-2"  # Invalid keys will be rejected at startup
+  # Can also set via environment variable: OPENROUTER_KEYS=key1,key2
+
+  # Response caching settings
+  enable_cache: true   # Enable caching for /models endpoint
+  cache_ttl: 300       # Cache lifetime in seconds (5 minutes default)
+
+  # Key selection strategy: "round-robin" (default), "first" or "random".
+  key_selection_strategy: "round-robin"
+  # List of key selection options:
+  #   "same": Always use the last used key as long as it is possible.
+  key_selection_opts: []
+  
+  # OpenRouter API base URL
+  base_url: "https://openrouter.ai/api/v1"
+  
+  # Public endpoints that don't require authentication
+  public_endpoints:
+    - "/api/v1/models"
+  
+  # Rate limit handling
+  rate_limit_cooldown: 14400  # Seconds to disable rate-limited keys (4 hours)
+  free_only: false            # Filter to free models only
+  google_rate_delay: 0        # Delay for Google API quota issues (seconds)
+  enable_token_counting: true  # Set false to disable token metrics
+
+# Proxy settings for outbound connections
+requestProxy:
+  enabled: false    # Enable outgoing proxy
+  url: "socks5://user:pass@proxy.com:1080"  # Proxy URL with creds
+
+# Key Management Service (KMS) settings
+kms:
+  # KMS will run on this host:port (automatically started by main.py)
+  host: "0.0.0.0"
+  port: 5556
+  # URL for proxy to communicate with KMS
+  url: "http://localhost:5556"
