@@ -80,19 +80,16 @@ async def metrics(request: Request):
     # Update KMS metrics directly from the state manager
     key_manager: KeyManager = request.app.state.key_manager
     key_manager.update_metrics()
-
-    # Get local Prometheus metrics
+    
+    # Get metrics values
     metrics_data = generate_latest().decode('utf-8')
+    cpu_usage = CPU_USAGE._value.get()
+    memory_usage = MEMORY_USAGE._value.get()
     
     # HTML template
     html = f"""
-    <!DOCTYPE html><html lang="en"><head><title>Proxy Metrics</title></head><body>
-        OpenRouter Proxy Metrics
-        <pre>{metrics_data}</pre>
-        <a href="/metrics/raw">View raw Prometheus format</a>
-    </body></html>
-    """
-    <html>
+    <!DOCTYPE html>
+    <html lang="en">
     <head>
         <title>OpenRouter Proxy Metrics</title>
         <style>
@@ -133,8 +130,8 @@ async def metrics(request: Request):
             <h2>System Resources</h2>
             <table class="metrics-table">
                 <tr><th>Metric</th><th>Value</th></tr>
-                <tr><td>CPU Usage</td><td class="metric-value">{CPU_USAGE._value.get()}%</td></tr>
-                <tr><td>Memory Usage</td><td class="metric-value">{MEMORY_USAGE._value.get()}%</td></tr>
+                <tr><td>CPU Usage</td><td class="metric-value">{cpu_usage}%</td></tr>
+                <tr><td>Memory Usage</td><td class="metric-value">{memory_usage}%</td></tr>
             </table>
         </div>
         
