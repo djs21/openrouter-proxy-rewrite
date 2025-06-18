@@ -72,3 +72,38 @@
     <a href="/metrics/raw" class="raw-link">View raw Prometheus format</a>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OpenRouter Proxy Metrics</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; margin: 2em; background-color: #f8f9fa; color: #212529; }
+        h1, h2 { color: #343a40; }
+        table { width: 100%; max-width: 800px; border-collapse: collapse; margin-bottom: 2em; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        th, td { border: 1px solid #dee2e6; padding: 0.75em; text-align: left; }
+        th { background-color: #e9ecef; }
+        td:first-child { font-weight: bold; }
+        pre { background-color: #e9ecef; padding: 1em; border: 1px solid #dee2e6; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h1>OpenRouter Proxy Metrics</h1>
+
+    <h2>Key Metrics</h2>
+    <table>
+        <tr><th>Metric</th><th>Value</th></tr>
+        <tr><td>CPU Usage</td><td>{{ cpu_usage }}%</td></tr>
+        <tr><td>Memory Usage</td><td>{{ memory_usage }}%</td></tr>
+        <tr><td>Active API Keys</td><td>{{ active_keys }}</td></tr>
+        <tr><td>Cooldown API Keys</td><td>{{ cooldown_keys }}</td></tr>
+        <tr><td>Tokens Sent</td><td>{{ tokens_sent }}</td></tr>
+        <tr><td>Tokens Received</td><td>{{ tokens_received }}</td></tr>
+    </table>
+
+    <h2><a href="/metrics/raw">Raw Prometheus Metrics</a></h2>
+    <pre><code>{{ raw_metrics }}</code></pre>
+</body>
+</html>
