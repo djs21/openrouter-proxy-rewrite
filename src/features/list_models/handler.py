@@ -1,8 +1,8 @@
 import httpx
 import json
 from typing import Optional
-from src.shared.config import config, logger
-from src.shared.utils import mask_key
+from config import config, logger
+from utils import mask_key
 from .query import ListModelsResponse
 
 class ListModelsHandler:

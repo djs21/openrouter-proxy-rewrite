@@ -1,7 +1,7 @@
 import httpx
 from fastapi import Depends
 from src.dependencies import get_http_client
-from src.shared.config import config, logger
+from config import config, logger
 from .query import HealthCheckResponse
 
 class HealthCheckHandler:
