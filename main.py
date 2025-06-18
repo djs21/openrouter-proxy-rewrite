@@ -34,6 +34,7 @@ from src.shared.metrics import (
 )
 from src.services.key_manager import KeyManager
 from constants import MODELS_ENDPOINTS
+from constants import MODELS_ENDPOINTS
 
 
 @asynccontextmanager
