@@ -69,12 +69,20 @@ async def test_proxy_chat(client: httpx.AsyncClient, base_url: str, headers: Dic
 
 async def test_key_management(client: httpx.AsyncClient, base_url: str, headers: Dict[str, str]):
     """Test Key Management features"""
+    kms_base_url = f"{base_url}/kms"
     # Test get_next_key
-    key_resp = await client.get(f"{base_url}/get_next_key", headers=headers)
+    key_resp = await client.get(f"{kms_base_url}/get_next_key", headers=headers)
     key_resp.raise_for_status()
     key_data = key_resp.json()
     assert "key" in key_data, "Expected API key in response"
-    print(f"Got API key: {key_data['key'][:4]}...{key_data['key'][-4:]}")
+    key_to_disable = key_data['key']
+    print(f"Got API key: {key_to_disable[:4]}...{key_to_disable[-4:]}")
+
+    # Test disable_key
+    disable_resp = await client.post(f"{kms_base_url}/disable_key", json={"key": key_to_disable}, headers=headers)
+    disable_resp.raise_for_status()
+    assert disable_resp.json().get("status") == "ok"
+    print(f"Successfully disabled key.")
 
 async def run_tests():
     """Run all feature tests"""

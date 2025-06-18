@@ -20,10 +20,27 @@ from fastapi.responses import HTMLResponse, Response
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from config import config, logger
-from routes import router, lifespan
-from utils import get_local_ip
-from metrics import TOKENS_SENT, TOKENS_RECEIVED, ACTIVE_KEYS, COOLDOWN_KEYS, CPU_USAGE, MEMORY_USAGE
+from src.shared.config import config, logger
+from src.shared.utils import get_local_ip
+from src.shared.metrics import CPU_USAGE, MEMORY_USAGE
+from src.services.key_manager import KeyManager
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Manage application lifespan resources."""
+    app.state.http_client = httpx.AsyncClient(timeout=600.0)
+    app.state.key_manager = KeyManager(
+        keys=config["openrouter"]["keys"],
+        cooldown_seconds=config["openrouter"]["rate_limit_cooldown"],
+        strategy=config["openrouter"]["key_selection_strategy"],
+        opts=config["openrouter"]["key_selection_opts"],
+    )
+    logger.info("Application startup complete.")
+    yield
+    await app.state.http_client.aclose()
+    logger.info("Application shutdown complete.")
+
 
 app = FastAPI(
     title="OpenRouter API Proxy",
@@ -33,11 +50,17 @@ app = FastAPI(
 )
 
 # Include feature routers
+from src.features.get_next_key.endpoints import router as get_next_key_router
+from src.features.disable_key.endpoints import router as disable_key_router
+from src.features.kms_metrics.endpoints import router as kms_metrics_router
 from src.features.list_models.endpoints import router as list_models_router
 from src.features.proxy_chat.endpoints import router as proxy_chat_router
 
-app.include_router(list_models_router, prefix="/api/v1")
-app.include_router(proxy_chat_router, prefix="/api/v1")
+app.include_router(list_models_router, prefix="/api/v1", tags=["Proxy"])
+app.include_router(proxy_chat_router, prefix="/api/v1", tags=["Proxy"])
+app.include_router(get_next_key_router, prefix="/api/v1/kms", tags=["KMS"])
+app.include_router(disable_key_router, prefix="/api/v1/kms", tags=["KMS"])
+app.include_router(kms_metrics_router, prefix="/api/v1/kms", tags=["KMS"])
 
 # Metrics endpoint with HTML dashboard
 @app.get("/metrics", response_class=HTMLResponse)
@@ -54,26 +77,21 @@ async def metrics(request: Request):
     # Get local Prometheus metrics
     metrics_data = generate_latest().decode('utf-8')
     
-    # Fetch KMS metrics
-    kms_active = "N/A"
-    kms_cooldown = "N/A"
-    
-    try:
-        kms_resp = await request.app.state.kms_client.get("/metrics")
-        kms_resp.raise_for_status()
-        kms_metrics = kms_resp.text
-        
-        # Parse metrics from raw text
-        for line in kms_metrics.splitlines():
-            if line.startswith("kms_active_keys "):
-                kms_active = line.split(" ")[1]
-            elif line.startswith("kms_cooldown_keys "):
-                kms_cooldown = line.split(" ")[1]
-    except Exception as e:
-        logger.error("Failed to fetch KMS metrics: %s", str(e))
+    # Update KMS metrics directly from the state manager
+    key_manager: KeyManager = request.app.state.key_manager
+    key_manager.update_metrics()
+
+    # Get local Prometheus metrics
+    metrics_data = generate_latest().decode('utf-8')
     
     # HTML template
     html = f"""
+    <!DOCTYPE html><html lang="en"><head><title>Proxy Metrics</title></head><body>
+        OpenRouter Proxy Metrics
+        <pre>{metrics_data}</pre>
+        <a href="/metrics/raw">View raw Prometheus format</a>
+    </body></html>
+    """
     <html>
     <head>
         <title>OpenRouter Proxy Metrics</title>

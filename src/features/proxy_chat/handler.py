@@ -1,14 +1,15 @@
+from fastapi import Depends
 import httpx
-from typing import Optional
 from src.shared.config import config, logger
-from src.services.key_manager import KeyManager
 from .command import ProxyChatRequest, ProxyChatResponse
+from src.dependencies import get_http_client, get_key_manager
+
 
 class ProxyChatHandler:
     def __init__(
-        self, 
-        http_client: httpx.AsyncClient,
-        key_manager: KeyManager
+        self,
+        http_client: httpx.AsyncClient = Depends(get_http_client),
+        key_manager: KeyManager = Depends(get_key_manager)
     ):
         self._client = http_client
         self._key_manager = key_manager
