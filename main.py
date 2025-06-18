@@ -20,8 +20,8 @@ except ImportError:
 
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, Response
-from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 from starlette.middleware.base import BaseHTTPMiddleware
+from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 
 from src.shared.config import config, logger
 from src.shared.utils import get_local_ip
