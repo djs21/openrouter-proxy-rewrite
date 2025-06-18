@@ -4,17 +4,20 @@ OpenRouter API Proxy
 Proxies requests to OpenRouter API and rotates API keys to bypass rate limits.
 """
 
+import sys
 import uuid
 import time
+from contextlib import asynccontextmanager
+
+import httpx
 import uvicorn
-import prometheus_client
-# Conditional psutil import
 try:
     import psutil
     PSUTIL_AVAILABLE = True
 except ImportError:
     PSUTIL_AVAILABLE = False
     psutil = None
+
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, Response
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
@@ -22,24 +25,27 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.shared.config import config, logger
 from src.shared.utils import get_local_ip
-from src.shared.metrics import CPU_USAGE, MEMORY_USAGE
+from src.shared.metrics import (
+    CPU_USAGE, MEMORY_USAGE, ACTIVE_KEYS, COOLDOWN_KEYS, TOKENS_SENT, TOKENS_RECEIVED
+)
 from src.services.key_manager import KeyManager
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage application lifespan resources."""
-    app.state.http_client = httpx.AsyncClient(timeout=600.0)
+    proxy_url = config["requestProxy"].get("url") if config["requestProxy"].get("enabled") else None
+    app.state.http_client = httpx.AsyncClient(timeout=600.0, proxy=proxy_url)
     app.state.key_manager = KeyManager(
         keys=config["openrouter"]["keys"],
         cooldown_seconds=config["openrouter"]["rate_limit_cooldown"],
         strategy=config["openrouter"]["key_selection_strategy"],
         opts=config["openrouter"]["key_selection_opts"],
     )
-    logger.info("Application startup complete.")
+    logger.info("Application startup complete")
     yield
     await app.state.http_client.aclose()
-    logger.info("Application shutdown complete.")
+    logger.info("Application shutdown complete")
 
 
 app = FastAPI(
@@ -80,14 +86,35 @@ async def metrics(request: Request):
     # Update KMS metrics directly from the state manager
     key_manager: KeyManager = request.app.state.key_manager
     key_manager.update_metrics()
-    
-    # Get metrics values
+
+    # Re-generate metrics data after update
     metrics_data = generate_latest().decode('utf-8')
-    cpu_usage = CPU_USAGE._value.get()
-    memory_usage = MEMORY_USAGE._value.get()
     
     # HTML template
     html = f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>OpenRouter Proxy Metrics</title>
+    </head>
+    <body>
+        <h1>OpenRouter Proxy Metrics</h1>
+        <h2>Key Metrics</h2>
+        <table>
+            <tr><th>Metric</th><th>Value</th></tr>
+            <tr><td>CPU Usage</td><td>{CPU_USAGE._value.get() if PSUTIL_AVAILABLE else 'N/A'}%</td></tr>
+            <tr><td>Memory Usage</td><td>{MEMORY_USAGE._value.get() if PSUTIL_AVAILABLE else 'N/A'}%</td></tr>
+            <tr><td>Active API Keys</td><td>{ACTIVE_KEYS._value.get()}</td></tr>
+            <tr><td>Cooldown API Keys</td><td>{COOLDOWN_KEYS._value.get()}</td></tr>
+            <tr><td>Tokens Sent</td><td>{TOKENS_SENT._value.get()}</td></tr>
+            <tr><td>Tokens Received</td><td>{TOKENS_RECEIVED._value.get()}</td></tr>
+        </table>
+        <h2><a href="/metrics/raw">Raw Prometheus Metrics</a></h2>
+        <pre>{metrics_data}</pre>
+    </body>
+    </html>
+    """
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -234,25 +261,9 @@ import subprocess
 import time
 
 if __name__ == "__main__":
-    kms_config = config["kms"]
-    kms_host = kms_config["host"]
-    kms_port = kms_config["port"]
-    
-    # Start KMS in a separate process
-    kms_process = multiprocessing.Process(
-        target=uvicorn.run,
-        kwargs={
-            "app": "src.services.kms_app:app",
-            "host": kms_host,
-            "port": kms_port,
-            "log_level": config["server"]["log_level"].lower()
-        }
-    )
-    kms_process.start()
-    
-    # Wait for KMS to start
-    time.sleep(2)
-    logger.info("Started Key Management Service at http://%s:%s", kms_host, kms_port)
+    if not config["openrouter"]["keys"]:
+        logger.error("No OpenRouter API keys found in config.yml or OPENROUTER_KEYS environment variable. Exiting.")
+        sys.exit(1)
 
     host = config["server"]["host"]
     port = config["server"]["port"]

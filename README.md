@@ -102,13 +102,10 @@ requestProxy:
 Simply run:
 
 ```bash
-python main.py
+python main.py # or python3 main.py
 ```
 
-This starts the complete application including:
-- API Gateway
-- Key Management
-- Metrics endpoint
+This starts the unified application server.
 
 ### Installing as a Systemd Service
 

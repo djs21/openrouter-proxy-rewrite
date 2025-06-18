@@ -41,6 +41,8 @@ openrouter:
   google_rate_delay: 0        # Delay for Google API quota issues (seconds)
   enable_token_counting: true  # Set false to disable token metrics
 
+# KMS section is no longer needed as it's integrated into the main application.
+
 # Proxy settings for outbound connections
 requestProxy:
   enabled: false    # Enable outgoing proxy
