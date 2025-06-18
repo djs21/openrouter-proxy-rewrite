@@ -32,8 +32,12 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Include routes
-app.include_router(router)
+# Include feature routers
+from src.features.list_models.endpoints import router as list_models_router
+from src.features.proxy_chat.endpoints import router as proxy_chat_router
+
+app.include_router(list_models_router, prefix="/api/v1")
+app.include_router(proxy_chat_router, prefix="/api/v1")
 
 # Metrics endpoint with HTML dashboard
 @app.get("/metrics", response_class=HTMLResponse)

@@ -27,14 +27,14 @@ This to-do list tracks the progress of refactoring the OpenRouter proxy to a Ver
 
 ## Phase 2: Refactor Core Proxy Logic
 
-- [ ] Create the **"List Models" Query Feature**:
-  - [ ] `src/features/list_models/query.py`
-  - [ ] `src/features/list_models/handler.py`
-  - [ ] `src/features/list_models/endpoints.py`
-- [ ] Create the **"Proxy Chat Request" Command Feature**:
-  - [ ] `src/features/proxy_chat/command.py`
-  - [ ] `src/features/proxy_chat/handler.py`
-  - [ ] `src/features/proxy_chat/endpoints.py`
+- [x] Create the **"List Models" Query Feature**:
+  - [x] `src/features/list_models/query.py`
+  - [x] `src/features/list_models/handler.py`
+  - [x] `src/features/list_models/endpoints.py`
+- [x] Create the **"Proxy Chat Request" Command Feature**:
+  - [x] `src/features/proxy_chat/command.py`
+  - [x] `src/features/proxy_chat/handler.py`
+  - [x] `src/features/proxy_chat/endpoints.py`
 
 ## Phase 3: Final Assembly and Cleanup
 
