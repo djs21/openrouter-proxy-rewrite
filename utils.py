@@ -10,8 +10,8 @@ from typing import Optional, Tuple
 
 from fastapi import Header, HTTPException
 
-from config import config, logger
-from constants import RATE_LIMIT_ERROR_CODE
+from .config import config, logger
+from .constants import RATE_LIMIT_ERROR_CODE
 
 def mask_key(key: str) -> str:
     """Mask an API key for logging purposes."""
