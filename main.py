@@ -25,10 +25,10 @@ from fastapi.templating import Jinja2Templates
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 
 from config import config, logger
-from constants import MODELS_ENDPOINTS
 from utils import get_local_ip
 from src.services.key_manager import KeyManager
 
+# Setup Jinja2 templates
 templates = Jinja2Templates(directory="templates")
 from metrics import (
     CPU_USAGE, MEMORY_USAGE, ACTIVE_KEYS, COOLDOWN_KEYS, 
