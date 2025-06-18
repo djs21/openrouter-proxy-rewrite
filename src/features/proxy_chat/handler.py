@@ -1,6 +1,6 @@
 from fastapi import Depends
 import httpx
-from src.shared.config import config, logger
+from config import config, logger
 from .command import ProxyChatRequest, ProxyChatResponse
 from src.dependencies import get_http_client, get_key_manager
 from src.services.key_manager import KeyManager
