@@ -105,11 +105,10 @@ Simply run:
 python main.py
 ```
 
-The main process will automatically:
-
-1. Start the Key Management Service in the background
-2. Start the API Gateway
-3. Manage both services simultaneously
+This starts the complete application including:
+- API Gateway
+- Key Management
+- Metrics endpoint
 
 ### Installing as a Systemd Service
 
