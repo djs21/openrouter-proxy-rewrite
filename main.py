@@ -97,51 +97,6 @@ async def metrics(request: Request):
     <head>
         <meta charset="UTF-8">
         <title>OpenRouter Proxy Metrics</title>
-    </head>
-    <body>
-        <h1>OpenRouter Proxy Metrics</h1>
-        <h2>Key Metrics</h2>
-        <table>
-            <tr><th>Metric</th><th>Value</th></tr>
-            <tr><td>CPU Usage</td><td>{CPU_USAGE._value.get() if PSUTIL_AVAILABLE else 'N/A'}%</td></tr>
-            <tr><td>Memory Usage</td><td>{MEMORY_USAGE._value.get() if PSUTIL_AVAILABLE else 'N/A'}%</td></tr>
-            <tr><td>Active API Keys</td><td>{ACTIVE_KEYS._value.get()}</td></tr>
-            <tr><td>Cooldown API Keys</td><td>{COOLDOWN_KEYS._value.get()}</td></tr>
-            <tr><td>Tokens Sent</td><td>{TOKENS_SENT._value.get()}</td></tr>
-            <tr><td>Tokens Received</td><td>{TOKENS_RECEIVED._value.get()}</td></tr>
-        </table>
-        <h2><a href="/metrics/raw">Raw Prometheus Metrics</a></h2>
-        <pre>{metrics_data}</pre>
-    </body>
-    </html>
-    """
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>OpenRouter Proxy Metrics</title>
-    </head>
-    <body>
-        <h1>OpenRouter Proxy Metrics</h1>
-        <h2>Key Metrics</h2>
-        <table>
-            <tr><th>Metric</th><th>Value</th></tr>
-            <tr><td>CPU Usage</td><td>{CPU_USAGE._value.get() if PSUTIL_AVAILABLE else 'N/A'}%</td></tr>
-            <tr><td>Memory Usage</td><td>{MEMORY_USAGE._value.get() if PSUTIL_AVAILABLE else 'N/A'}%</td></tr>
-            <tr><td>Active API Keys</td><td>{ACTIVE_KEYS._value.get()}</td></tr>
-            <tr><td>Cooldown API Keys</td><td>{COOLDOWN_KEYS._value.get()}</td></tr>
-            <tr><td>Tokens Sent</td><td>{TOKENS_SENT._value.get()}</td></tr>
-            <tr><td>Tokens Received</td><td>{TOKENS_RECEIVED._value.get()}</td></tr>
-        </table>
-        <h2><a href="/metrics/raw">Raw Prometheus Metrics</a></h2>
-        <pre>{metrics_data}</pre>
-    </body>
-    </html>
-    """
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <title>OpenRouter Proxy Metrics</title>
         <style>
             body {{ font-family: Arial, sans-serif; margin: 20px; }}
             h1 {{ color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px; }}
@@ -180,17 +135,17 @@ async def metrics(request: Request):
             <h2>System Resources</h2>
             <table class="metrics-table">
                 <tr><th>Metric</th><th>Value</th></tr>
-                <tr><td>CPU Usage</td><td class="metric-value">{cpu_usage}%</td></tr>
-                <tr><td>Memory Usage</td><td class="metric-value">{memory_usage}%</td></tr>
+                <tr><td>CPU Usage</td><td class="metric-value">{CPU_USAGE._value.get() if PSUTIL_AVAILABLE else 'N/A'}%</td></tr>
+                <tr><td>Memory Usage</td><td class="metric-value">{MEMORY_USAGE._value.get() if PSUTIL_AVAILABLE else 'N/A'}%</td></tr>
             </table>
         </div>
         
         <div class="section">
-            <h2>API Keys (KMS)</h2>
+            <h2>API Keys</h2>
             <table class="metrics-table">
                 <tr><th>Metric</th><th>Value</th></tr>
-                <tr><td>Active Keys</td><td class="metric-value">{kms_active}</td></tr>
-                <tr><td>Keys in Cooldown</td><td class="metric-value">{kms_cooldown}</td></tr>
+                <tr><td>Active Keys</td><td class="metric-value">{ACTIVE_KEYS._value.get()}</td></tr>
+                <tr><td>Keys in Cooldown</td><td class="metric-value">{COOLDOWN_KEYS._value.get()}</td></tr>
             </table>
         </div>
         
@@ -205,8 +160,12 @@ async def metrics(request: Request):
         
         <div class="section">
             <h2>All Prometheus Metrics</h2>
-            <table class="metrics-table">
-                <tr><th>Metric</th><th>Value</th><th>Type</th></tr>
+            <pre>{metrics_data}</pre>
+        </div>
+        
+        <a href="/metrics/raw" class="raw-link">View raw Prometheus format</a>
+    </body>
+    </html>
     """
     
     # Parse and add all Prometheus metrics
