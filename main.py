@@ -94,109 +94,17 @@ async def metrics(request: Request):
     # Re-generate metrics data after update
     metrics_data = generate_latest().decode('utf-8')
     
-    # HTML template
-    html = f"""
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>OpenRouter Proxy Metrics</title>
-        <style>
-            body {{ font-family: Arial, sans-serif; margin: 20px; }}
-            h1 {{ color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px; }}
-            .metrics-table {{
-                border-collapse: collapse;
-                width: 100%;
-                margin: 20px 0;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            }}
-            .metrics-table th, .metrics-table td {{
-                border: 1px solid #ddd;
-                padding: 12px;
-                text-align: left;
-            }}
-            .metrics-table th {{
-                background-color: #f8f9fa;
-                position: sticky;
-                top: 0;
-            }}
-            .metrics-table tr:nth-child(even) {{ background-color: #f9f9f9; }}
-            .metrics-table tr:hover {{ background-color: #f1f1f1; }}
-            .metric-value {{ font-family: monospace; }}
-            .section {{ margin-bottom: 30px; }}
-            .raw-link {{ 
-                display: inline-block;
-                margin-top: 20px;
-                color: #666;
-                font-size: 0.9em;
-            }}
-        </style>
-    </head>
-    <body>
-        <h1>OpenRouter Proxy Metrics</h1>
-        
-        <div class="section">
-            <h2>System Resources</h2>
-            <table class="metrics-table">
-                <tr><th>Metric</th><th>Value</th></tr>
-                <tr><td>CPU Usage</td><td class="metric-value">{CPU_USAGE._value.get() if PSUTIL_AVAILABLE else 'N/A'}%</td></tr>
-                <tr><td>Memory Usage</td><td class="metric-value">{MEMORY_USAGE._value.get() if PSUTIL_AVAILABLE else 'N/A'}%</td></tr>
-            </table>
-        </div>
-        
-        <div class="section">
-            <h2>API Keys</h2>
-            <table class="metrics-table">
-                <tr><th>Metric</th><th>Value</th></tr>
-                <tr><td>Active Keys</td><td class="metric-value">{ACTIVE_KEYS._value.get()}</td></tr>
-                <tr><td>Keys in Cooldown</td><td class="metric-value">{COOLDOWN_KEYS._value.get()}</td></tr>
-            </table>
-        </div>
-        
-        <div class="section">
-            <h2>Token Statistics</h2>
-            <table class="metrics-table">
-                <tr><th>Metric</th><th>Value</th></tr>
-                <tr><td>Tokens Sent</td><td class="metric-value">{TOKENS_SENT._value.get()}</td></tr>
-                <tr><td>Tokens Received</td><td class="metric-value">{TOKENS_RECEIVED._value.get()}</td></tr>
-            </table>
-        </div>
-        
-        <div class="section">
-            <h2>All Prometheus Metrics</h2>
-            <pre>{metrics_data}</pre>
-        </div>
-        
-        <a href="/metrics/raw" class="raw-link">View raw Prometheus format</a>
-    </body>
-    </html>
-    """
-    
-    # Parse and add all Prometheus metrics
-    current_type = ""
-    for line in metrics_data.split('\n'):
-        if line.startswith('# TYPE'):
-            current_type = line.split(' ')[3]
-        elif line and not line.startswith('#'):
-            parts = line.split(' ')
-            if len(parts) >= 2:
-                html += f"""
-                <tr>
-                    <td>{parts[0]}</td>
-                    <td class="metric-value">{' '.join(parts[1:])}</td>
-                    <td>{current_type}</td>
-                </tr>
-                """
-    
-    html += """
-            </table>
-        </div>
-        
-        <a href="/metrics/raw" class="raw-link">View raw Prometheus format</a>
-    </body>
-    </html>
-    """
-    return HTMLResponse(content=html)
+    context = {
+        "request": request,
+        "cpu_usage": f"{CPU_USAGE._value.get():.1f}" if PSUTIL_AVAILABLE else "N/A",
+        "memory_usage": f"{MEMORY_USAGE._value.get():.1f}" if PSUTIL_AVAILABLE else "N/A", 
+        "active_keys": int(ACTIVE_KEYS._value.get()),
+        "cooldown_keys": int(COOLDOWN_KEYS._value.get()),
+        "tokens_sent": int(TOKENS_SENT._value.get()),
+        "tokens_received": int(TOKENS_RECEIVED._value.get()),
+        "raw_metrics": metrics_data
+    }
+    return templates.TemplateResponse("metrics.html", context)
 
 # Raw metrics endpoint
 @app.get("/metrics/raw")
