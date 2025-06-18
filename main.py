@@ -61,16 +61,12 @@ app = FastAPI(
 )
 
 # Include feature routers
-from src.features.disable_key.endpoints import router as disable_key_router
-from src.features.kms_metrics.endpoints import router as kms_metrics_router
 from src.features.list_models.endpoints import router as list_models_router
 from src.features.proxy_chat.endpoints import router as proxy_chat_router
 from src.features.health_check.endpoints import router as health_check_router
 
 app.include_router(list_models_router, prefix="/api/v1", tags=["Proxy"])
 app.include_router(proxy_chat_router, prefix="/api/v1", tags=["Proxy"])
-app.include_router(disable_key_router, prefix="/api/v1/kms", tags=["KMS"])
-app.include_router(kms_metrics_router, prefix="/api/v1/kms", tags=["KMS"])
 app.include_router(health_check_router, tags=["Monitoring"])
 
 # Metrics endpoint with HTML dashboard
