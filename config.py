@@ -38,11 +38,6 @@ class RequestProxyConfig(BaseModel):
     enabled: bool = False
     url: Optional[str] = None
 
-class KmsConfig(BaseModel):
-    host: str = "0.0.0.0"
-    port: int = 5556
-
-
 def load_config() -> Dict[str, Any]:
     """Load and validate configuration with Pydantic models."""
     try:
@@ -58,7 +53,6 @@ def load_config() -> Dict[str, Any]:
         config_data["server"] = ServerConfig(**config_data.get("server", {})).dict()
         config_data["openrouter"] = OpenRouterConfig(**config_data.get("openrouter", {})).dict()
         config_data["requestProxy"] = RequestProxyConfig(**config_data.get("requestProxy", {})).dict()
-        config_data["kms"] = KmsConfig(**config_data.get("kms", {})).dict()
         
         return config_data
     except FileNotFoundError:
