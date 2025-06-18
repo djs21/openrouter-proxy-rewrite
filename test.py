@@ -57,10 +57,19 @@ async def test_proxy_chat(client: httpx.AsyncClient, base_url: str, headers: Dic
         async with client.stream("POST", url, headers=headers, json=request_data) as resp:
             resp.raise_for_status()
             async for line in resp.aiter_lines():
+                line = line.strip()
+                if not line:
+                    continue
                 if line.startswith("data: "):
-                    data = json.loads(line[6:])
-                    if data != "[DONE]":
-                        print(".", end="", flush=True)
+                    content = line[6:].strip()
+                    if content == "[DONE]":
+                        continue
+                    try:
+                        if content:
+                            data = json.loads(content)
+                            print(".", end="", flush=True)
+                    except json.JSONDecodeError:
+                        print("", end="", flush=True)
         print("\nStream completed")
     else:
         resp = await client.post(url, headers=headers, json=request_data)
