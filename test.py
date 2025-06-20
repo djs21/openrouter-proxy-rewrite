@@ -12,11 +12,10 @@ from typing import Dict, Any
 import httpx
 import yaml
 
-# Test configuration
-MODEL = "deepseek/deepseek-r1:free"
+# Test configuration - use a model that works with proxy's free_only setting
+MODEL = "mistralai/mistral-7b-instruct:free"
 STREAM = True
 MAX_TOKENS = 600
-INCLUDE_REASONING = True
 
 def load_config() -> Dict[str, Any]:
     """Load configuration from config.yml"""
