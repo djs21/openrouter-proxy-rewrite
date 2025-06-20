@@ -50,7 +50,6 @@ async def test_proxy_chat(client: httpx.AsyncClient, base_url: str, headers: Dic
         "messages": [{"role": "user", "content": "Hello!"}],
         "stream": STREAM,
         "max_tokens": MAX_TOKENS,
-        "include_reasoning": INCLUDE_REASONING,
     }
     
     if STREAM:
