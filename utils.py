@@ -8,7 +8,7 @@ import json
 import socket
 from typing import Optional, Tuple
 
-from fastapi import Header, HTTPException
+from fastapi import Header, HTTPException, Request
 
 from config import config, logger
 from constants import RATE_LIMIT_ERROR_CODE
