@@ -12,10 +12,9 @@ from typing import Dict, Any
 import httpx
 import yaml
 
-# Test configuration - use a model that works with proxy's free_only setting
-MODEL = "mistralai/mistral-7b-instruct:free"
-STREAM = True
-MAX_TOKENS = 600
+# Test configuration - use Deepseek model that works with proxy's free_only setting
+MODEL = "deepseek/deepseek-chat:free"
+STREAM = False
 
 def load_config() -> Dict[str, Any]:
     """Load configuration from config.yml"""
@@ -48,7 +47,6 @@ async def test_proxy_chat(client: httpx.AsyncClient, base_url: str, headers: Dic
         "model": MODEL,
         "messages": [{"role": "user", "content": "Hello!"}],
         "stream": STREAM,
-        "max_tokens": MAX_TOKENS,
     }
     
     if STREAM:
