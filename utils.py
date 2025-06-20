@@ -51,7 +51,7 @@ async def verify_access_key(
     Raises:
         HTTPException: If authentication fails
     """
-    # Skip auth for public endpoints
+    # Skip auth for public endpoints - no verification needed
     if request.url.path in config["openrouter"]["public_endpoints"]:
         return True
 

@@ -60,13 +60,23 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Include feature routers
+from fastapi import Depends
 from src.features.list_models.endpoints import router as list_models_router
 from src.features.proxy_chat.endpoints import router as proxy_chat_router
 from src.features.health_check.endpoints import router as health_check_router
+from utils import verify_access_key
 
-app.include_router(list_models_router, prefix="/api/v1", tags=["Proxy"])
-app.include_router(proxy_chat_router, prefix="/api/v1", tags=["Proxy"])
+app.include_router(
+    list_models_router, 
+    prefix="/api/v1", 
+    tags=["Proxy"]
+)
+app.include_router(
+    proxy_chat_router, 
+    prefix="/api/v1", 
+    dependencies=[Depends(verify_access_key)],
+    tags=["Proxy"]
+)
 app.include_router(health_check_router, tags=["Monitoring"])
 
 # Metrics endpoint with HTML dashboard
