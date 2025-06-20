@@ -34,12 +34,15 @@ def get_local_ip() -> str:
 
 
 async def verify_access_key(
+    request: Request,
     authorization: Optional[str] = Header(None),
 ) -> bool:
     """
     Verify the local access key for authentication.
+    Skip authentication for public endpoints.
 
     Args:
+        request: Incoming request for path checking
         authorization: Authorization header
 
     Returns:
@@ -48,6 +51,9 @@ async def verify_access_key(
     Raises:
         HTTPException: If authentication fails
     """
+    # Skip auth for public endpoints
+    if request.url.path in config["openrouter"]["public_endpoints"]:
+        return True
 
     if not authorization:
         raise HTTPException(status_code=401, detail="Authorization header missing")

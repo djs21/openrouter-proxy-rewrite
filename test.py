@@ -33,10 +33,10 @@ async def test_feature(feature_name: str, test_func: callable):
         print(f"❌ {feature_name} test failed: {str(e)}")
         raise
 
-async def test_list_models(client: httpx.AsyncClient, base_url: str, headers: Dict[str, str]):
-    """Test the List Models feature"""
+async def test_list_models(client: httpx.AsyncClient, base_url: str):
+    """Test the List Models feature - public endpoint requires no auth header"""
     url = f"{base_url}/models"
-    resp = await client.get(url, headers=headers)
+    resp = await client.get(url)  # No Authorization header for public endpoint
     resp.raise_for_status()
     data = resp.json()
     assert isinstance(data.get("data"), list), "Expected list of models"
@@ -105,7 +105,7 @@ async def run_tests():
     headers = {"Authorization": f"Bearer {access_key}"} if access_key else {}
 
     async with httpx.AsyncClient(timeout=60.0) as client:
-        await test_feature("List Models", lambda: test_list_models(client, base_url, headers))
+        await test_feature("List Models", lambda: test_list_models(client, base_url))
         await test_feature("Proxy Chat", lambda: test_proxy_chat(client, base_url, headers))
         await test_feature("Key Management", lambda: test_key_management(client, base_url, headers))
 
