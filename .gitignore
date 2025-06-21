@@ -34,6 +34,6 @@ build/
 
 .git/
 .aider*
-or-proxy
+or-proxy/*
 orp
 venv
