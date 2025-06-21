@@ -80,36 +80,12 @@ app.include_router(
 app.include_router(health_check_router, tags=["Monitoring"])
 app.include_router(metrics_router)
 
-class RequestIDMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        request.state.request_id = request.headers.get('X-Request-ID', str(uuid.uuid4()))
-        response = await call_next(request)
-        response.headers["X-Request-ID"] = request.state.request_id
-        return response
+from src.middleware import RequestIDMiddleware, add_process_time_header
 
+# Note: middleware is processed in reverse order of addition.
+# The process time header will be added first, then the request ID.
+app.add_middleware(BaseHTTPMiddleware, dispatch=add_process_time_header)
 app.add_middleware(RequestIDMiddleware)
-
-@app.middleware("http")
-async def add_process_time(request: Request, call_next):
-    start_time = time.time()
-    response = await call_next(request)
-    process_time = time.time() - start_time
-    response.headers["X-Process-Time"] = str(process_time)
-
-    if "date" in response.headers:
-        del response.headers["date"]
-
-    logger.info(
-        "Request completed",
-        extra={
-            "req_id": request.state.request_id,
-            "method": request.method,
-            "path": request.url.path,
-            "status": response.status_code,
-            "duration_sec": round(process_time, 4)
-        }
-    )
-    return response
 
 if __name__ == "__main__":
     if not config["openrouter"]["keys"]:
