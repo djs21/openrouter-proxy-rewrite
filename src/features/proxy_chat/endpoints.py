@@ -10,5 +10,5 @@ async def proxy_chat(
     request: Request,
     chat_request: ProxyChatRequest,
     handler: ProxyChatHandler = Depends(ProxyChatHandler)
-) -> StreamingResponse | dict:
+):
     return await handler.handle(chat_request)
