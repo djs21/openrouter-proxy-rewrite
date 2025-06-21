@@ -5,7 +5,7 @@ from .handler import ProxyChatHandler
 
 router = APIRouter()
 
-@router.post("/chat/completions")
+@router.post("/chat/completions", response_model=None)
 async def proxy_chat(
     request: Request,
     chat_request: ProxyChatRequest,
