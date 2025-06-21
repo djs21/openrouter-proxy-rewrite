@@ -26,12 +26,17 @@ class ProxyChatHandler:
         is_streaming = request.stream if hasattr(request, 'stream') else False
 
         if is_streaming:
-            response = await self._client.stream(
+            async with self._client.stream(
                 "POST",
                 f"{config['openrouter']['base_url']}/chat/completions",
                 json=request.dict(exclude_unset=True),
                 headers=headers
-            )
+            ) as response:
+                response.raise_for_status()  # Raises HTTPStatusError for 4xx/5xx responses
+                async def generate_stream():
+                    async for chunk in response.aiter_bytes():
+                        yield chunk
+                return StreamingResponse(generate_stream(), media_type="text/event-stream")
         else:
             response = await self._client.post(
                 f"{config['openrouter']['base_url']}/chat/completions",
@@ -39,21 +44,13 @@ class ProxyChatHandler:
                 headers=headers
             )
 
-        try:
+            # For non-streaming requests, assume a single JSON response
             response.raise_for_status()  # Raises HTTPStatusError for 4xx/5xx responses
-
-            if is_streaming:
-                async def generate_stream():
-                    async for chunk in response.aiter_bytes():
-                        yield chunk
-                return StreamingResponse(generate_stream(), media_type="text/event-stream")
-            else:
-                # For non-streaming requests, assume a single JSON response
-                try:
-                    return ProxyChatResponse(completion=response.json())
-                except json.JSONDecodeError as e:
-                    logger.error(f"JSON decoding error for non-streaming response from OpenRouter API: {e}. Response content: {response.text}")
-                    raise HTTPException(status_code=500, detail="Failed to parse non-streaming response from OpenRouter API")
+            try:
+                return ProxyChatResponse(completion=response.json())
+            except json.JSONDecodeError as e:
+                logger.error(f"JSON decoding error for non-streaming response from OpenRouter API: {e}. Response content: {response.text}")
+                raise HTTPException(status_code=500, detail="Failed to parse non-streaming response from OpenRouter API")
 
         except httpx.HTTPStatusError as e:
             logger.error(f"HTTP error occurred from OpenRouter: {e.response.status_code} - {e.response.text}")
