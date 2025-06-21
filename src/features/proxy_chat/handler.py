@@ -25,12 +25,19 @@ class ProxyChatHandler:
 
         is_streaming = request.stream if hasattr(request, 'stream') else False
 
-        response = await self._client.post(
-            f"{config['openrouter']['base_url']}/chat/completions",
-            json=request.dict(exclude_unset=True),
-            headers=headers,
-            stream=is_streaming  # Enable streaming for httpx if the client requests it
-        )
+        if is_streaming:
+            response = await self._client.stream(
+                "POST",
+                f"{config['openrouter']['base_url']}/chat/completions",
+                json=request.dict(exclude_unset=True),
+                headers=headers
+            )
+        else:
+            response = await self._client.post(
+                f"{config['openrouter']['base_url']}/chat/completions",
+                json=request.dict(exclude_unset=True),
+                headers=headers
+            )
 
         try:
             response.raise_for_status()  # Raises HTTPStatusError for 4xx/5xx responses
