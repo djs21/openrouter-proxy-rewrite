@@ -1,7 +1,7 @@
 import httpx
 from fastapi import Depends
-from src.dependencies import get_http_client
-from config import config, logger
+from src.shared.dependencies import get_http_client
+from src.shared.config import config, logger
 from .query import HealthCheckResponse
 
 class HealthCheckHandler:
@@ -10,7 +10,7 @@ class HealthCheckHandler:
 
     async def handle(self) -> HealthCheckResponse:
         services_status = {}
-        
+
         # Check OpenRouter API status
         try:
             health_resp = await self._http_client.head(
