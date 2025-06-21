@@ -22,37 +22,42 @@ class ProxyChatHandler:
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
         }
-
         is_streaming = request.stream if hasattr(request, 'stream') else False
 
-        try:
-            if is_streaming:
+        async def stream_generator():
+            """Generator for streaming responses. The `async with` context manager
+            now correctly wraps the streaming logic, keeping the connection open."""
+            try:
                 async with self._client.stream(
                     "POST",
                     f"{config['openrouter']['base_url']}/chat/completions",
                     json=request.dict(exclude_unset=True),
                     headers=headers
                 ) as response:
-                    response.raise_for_status()  # Raises HTTPStatusError for 4xx/5xx responses
-                    async def generate_stream():
-                        async for chunk in response.aiter_bytes():
-                            yield chunk
-                    return StreamingResponse(generate_stream(), media_type="text/event-stream")
-            else:
-                response = await self._client.post(
-                    f"{config['openrouter']['base_url']}/chat/completions",
-                    json=request.dict(exclude_unset=True),
-                    headers=headers
-                )
+                    response.raise_for_status()
+                    async for chunk in response.aiter_bytes():
+                        yield chunk
+            except httpx.HTTPStatusError as e:
+                logger.error(f"HTTP error from OpenRouter during stream: {e.response.status_code}")
+            except httpx.RequestError as e:
+                logger.error(f"Request error during stream: {e}")
 
-                # For non-streaming requests, assume a single JSON response
-                response.raise_for_status()  # Raises HTTPStatusError for 4xx/5xx responses
-                try:
-                    return ProxyChatResponse(completion=response.json())
-                except json.JSONDecodeError as e:
-                    logger.error(f"JSON decoding error for non-streaming response from OpenRouter API: {e}. Response content: {response.text}")
-                    raise HTTPException(status_code=500, detail="Failed to parse non-streaming response from OpenRouter API")
+        if is_streaming:
+            return StreamingResponse(stream_generator(), media_type="text/event-stream")
 
+        # Non-streaming logic
+        try:
+            response = await self._client.post(
+                f"{config['openrouter']['base_url']}/chat/completions",
+                json=request.dict(exclude_unset=True),
+                headers=headers
+            )
+            response.raise_for_status()
+            try:
+                return ProxyChatResponse(completion=response.json())
+            except json.JSONDecodeError as e:
+                logger.error(f"JSON decoding error for non-streaming response from OpenRouter API: {e}. Response content: {response.text}")
+                raise HTTPException(status_code=500, detail="Failed to parse non-streaming response from OpenRouter API")
         except httpx.HTTPStatusError as e:
             logger.error(f"HTTP error occurred from OpenRouter: {e.response.status_code} - {e.response.text}")
             raise HTTPException(status_code=e.response.status_code, detail=e.response.text)
