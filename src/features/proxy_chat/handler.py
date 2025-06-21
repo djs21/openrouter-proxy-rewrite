@@ -1,4 +1,4 @@
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 import httpx
 from config import config, logger
 from .command import ProxyChatRequest, ProxyChatResponse
@@ -30,12 +30,12 @@ class ProxyChatHandler:
         # Check if the response is successful
         if response.status_code != 200:
             logger.error(f"Error from OpenRouter API: {response.status_code} - {response.text}")
-            response.raise_for_status()
+            raise HTTPException(status_code=response.status_code, detail=response.text)
 
         # Check if the response content is not empty
         if not response.content:
             logger.error("Empty response from OpenRouter API")
-            raise ValueError("Empty response from OpenRouter API")
+            raise HTTPException(status_code=500, detail="Empty response from OpenRouter API")
 
         try:
             return ProxyChatResponse(completion=response.json())
@@ -47,4 +47,4 @@ class ProxyChatHandler:
             raise
         except ValueError as e:
             logger.error(f"JSON decoding error: {e}")
-            raise
+            raise HTTPException(status_code=500, detail="Failed to parse response from OpenRouter API")
