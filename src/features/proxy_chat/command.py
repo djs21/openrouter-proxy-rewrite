@@ -1,13 +1,18 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List, Dict, Any
 
 class ProxyChatRequest(BaseModel):
-    # Add fields relevant to your chat completion request
-    # For example, 'messages', 'model', 'max_tokens', 'temperature', etc.
-    # You'll need to align this with the actual OpenRouter API request body.
-    # This is a placeholder, adapt it to your needs.
+    messages: List[Dict[str, Any]]
+    model: str
+    temperature: Optional[float] = 1.0
+    top_p: Optional[float] = 1.0
+    max_tokens: Optional[int] = None
+    stop: Optional[List[str]] = None
+    presence_penalty: Optional[float] = 0.0
+    frequency_penalty: Optional[float] = 0.0
+    response_format: Optional[Dict[str, str]] = None
+    seed: Optional[int] = None
     stream: Optional[bool] = False
-    completion: dict  # Placeholder for the full request body
 
 class ProxyChatResponse(BaseModel):
     completion: dict
