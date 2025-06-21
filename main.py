@@ -63,6 +63,7 @@ from fastapi import Depends
 from src.features.list_models.endpoints import router as list_models_router
 from src.features.proxy_chat.endpoints import router as proxy_chat_router
 from src.features.health_check.endpoints import router as health_check_router
+from src.features.metrics.endpoints import router as metrics_router
 from utils import verify_access_key
 
 app.include_router(
@@ -77,31 +78,7 @@ app.include_router(
     tags=["Proxy"]
 )
 app.include_router(health_check_router, tags=["Monitoring"])
-
-# Metrics endpoint with HTML dashboard
-@app.get("/metrics", response_class=HTMLResponse)
-async def metrics(request: Request):
-    """Returns metrics in HTML table format by default"""
-    # We need to get the key_manager from app state
-    key_manager: KeyManager = app.state.key_manager
-    key_manager.update_metrics()
-    metrics_data = generate_latest().decode('utf-8')
-
-    context = {
-        "request": request,
-        "active_keys": int(ACTIVE_KEYS._value.get()),
-        "cooldown_keys": int(COOLDOWN_KEYS._value.get()),
-        "raw_metrics": metrics_data
-    }
-    return templates.TemplateResponse("metrics.html", context)
-
-@app.get("/metrics/raw")
-async def metrics_raw():
-    """Returns raw Prometheus format"""
-    return Response(
-        content=generate_latest(),
-        media_type=CONTENT_TYPE_LATEST
-    )
+app.include_router(metrics_router)
 
 class RequestIDMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
