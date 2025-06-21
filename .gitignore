@@ -2,6 +2,8 @@
 .aider.*
 # Configuration file
 config.yml
+CONVENTIONS.md
+to-do.md
 
 # Virtual environment
 venv/
