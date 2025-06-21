@@ -9,9 +9,9 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 from fastapi import HTTPException
 
-from config import config, logger
-from utils import mask_key
-from metrics import ACTIVE_KEYS, COOLDOWN_KEYS
+from src.shared.config import config, logger
+from src.shared.utils import mask_key
+from src.shared.metrics import ACTIVE_KEYS, COOLDOWN_KEYS
 
 class KeyManager:
     """Manages OpenRouter API keys, including rotation and rate limit handling."""
@@ -47,7 +47,7 @@ class KeyManager:
                     else:
                         continue
                 available_keys.add(key)
-                
+
             for key in expired_keys:
                 if key in self.disabled_until:
                     del self.disabled_until[key]
@@ -57,7 +57,7 @@ class KeyManager:
                 soonest_available = min(self.disabled_until.values())
                 wait_seconds = (soonest_available - now_).total_seconds()
                 logger.error(
-                    "All API keys are currently disabled. The next key will be available in %.2f seconds.", 
+                    "All API keys are currently disabled. The next key will be available in %.2f seconds.",
                     wait_seconds,
                 )
                 raise HTTPException(
