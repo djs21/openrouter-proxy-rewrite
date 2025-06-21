@@ -1,9 +1,9 @@
 from typing import Dict, Any, List
 from fastapi import Depends
-from config import config
+from src.shared.config import config
 from .query import ListModelsResponse
 from src.services.model_filter_service import ModelFilterService
-from src.dependencies import get_model_filter_service
+from src.shared.dependencies import get_model_filter_service
 
 class ListModelsHandler:
     """

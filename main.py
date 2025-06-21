@@ -18,14 +18,14 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.templating import Jinja2Templates
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 
-from config import config, logger
-from utils import get_local_ip
+from src.shared.config import config, logger
+from src.shared.utils import get_local_ip
 from src.services.key_manager import KeyManager
 from src.services.model_filter_service import ModelFilterService
 
 # Setup Jinja2 templates
 templates = Jinja2Templates(directory="templates")
-from metrics import (
+from src.shared.metrics import (
     ACTIVE_KEYS, COOLDOWN_KEYS
 )
 
@@ -64,7 +64,7 @@ from src.features.list_models.endpoints import router as list_models_router
 from src.features.proxy_chat.endpoints import router as proxy_chat_router
 from src.features.health_check.endpoints import router as health_check_router
 from src.features.metrics.endpoints import router as metrics_router
-from utils import verify_access_key
+from src.shared.utils import verify_access_key
 
 app.include_router(
     list_models_router,
@@ -80,7 +80,7 @@ app.include_router(
 app.include_router(health_check_router, tags=["Monitoring"])
 app.include_router(metrics_router)
 
-from src.middleware import RequestIDMiddleware, add_process_time_header
+from src.shared.middleware import RequestIDMiddleware, add_process_time_header
 
 # Note: middleware is processed in reverse order of addition.
 # The process time header will be added first, then the request ID.

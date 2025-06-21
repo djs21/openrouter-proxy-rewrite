@@ -10,8 +10,8 @@ from typing import Optional, Tuple
 
 from fastapi import Header, HTTPException, Request
 
-from config import config, logger
-from constants import RATE_LIMIT_ERROR_CODE
+from src.shared.config import config, logger
+from src.shared.constants import RATE_LIMIT_ERROR_CODE
 
 def mask_key(key: str) -> str:
     """Mask an API key for logging purposes."""
@@ -20,7 +20,6 @@ def mask_key(key: str) -> str:
     if len(key) <= 8:
         return "****"
     return key[:4] + "****" + key[-4:]
-
 
 def get_local_ip() -> str:
     """Get local IP address for displaying in logs."""
@@ -31,7 +30,6 @@ def get_local_ip() -> str:
     except Exception as e:
         logger.error("Failed to get local IP, using fallback", extra={"error": str(e)})
         return "127.0.0.1"
-
 
 async def verify_access_key(
     request: Request,
@@ -66,7 +64,6 @@ async def verify_access_key(
         raise HTTPException(status_code=401, detail="Invalid access key")
 
     return True
-
 
 async def is_google_error(data: str) -> bool:
     # data = {
@@ -112,7 +109,6 @@ async def is_google_error(data: str) -> bool:
                     await asyncio.sleep(config["openrouter"]["google_rate_delay"])
                 return True
     return False
-
 
 async def check_rate_limit(data: str or bytes) -> Tuple[bool, Optional[int]]:
     """

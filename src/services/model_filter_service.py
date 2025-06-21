@@ -2,7 +2,7 @@ import time
 import httpx
 import asyncio
 from typing import Set, List, Dict, Any
-from config import logger
+from src.shared.config import logger
 
 class ModelFilterService:
     """

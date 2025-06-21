@@ -1,13 +1,13 @@
 from fastapi import Depends, HTTPException
 import httpx
 import json
-from config import config, logger
+from src.shared.config import config, logger
 from fastapi.responses import StreamingResponse
 from .command import ProxyChatRequest, ProxyChatResponse
-from src.dependencies import get_http_client, get_key_manager, get_model_filter_service
+from src.shared.dependencies import get_http_client, get_key_manager, get_model_filter_service
 from src.services.key_manager import KeyManager
-from utils import mask_key
-from constants import RATE_LIMIT_ERROR_CODE
+from src.shared.utils import mask_key
+from src.shared.constants import RATE_LIMIT_ERROR_CODE
 from src.services.model_filter_service import ModelFilterService
 
 class ProxyChatHandler:

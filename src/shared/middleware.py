@@ -2,7 +2,7 @@ import time
 import uuid
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
-from config import logger
+from src.shared.config import logger
 
 class RequestIDMiddleware(BaseHTTPMiddleware):
     """

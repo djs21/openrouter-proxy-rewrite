@@ -4,8 +4,8 @@ from fastapi.templating import Jinja2Templates
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 
 from src.services.key_manager import KeyManager
-from src.dependencies import get_key_manager
-from metrics import ACTIVE_KEYS, COOLDOWN_KEYS
+from src.shared.dependencies import get_key_manager
+from src.shared.metrics import ACTIVE_KEYS, COOLDOWN_KEYS
 
 # The templates directory is relative to the execution root, not this file.
 templates = Jinja2Templates(directory="templates")
