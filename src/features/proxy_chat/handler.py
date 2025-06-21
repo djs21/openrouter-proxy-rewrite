@@ -27,7 +27,7 @@ class ProxyChatHandler:
 
         response = await self._client.post(
             f"{config['openrouter']['base_url']}/chat/completions",
-            json=request.model_dump(exclude_unset=True),
+            json=request.dict(exclude_unset=True),
             headers=headers,
             stream=is_streaming  # Enable streaming for httpx if the client requests it
         )
