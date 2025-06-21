@@ -45,6 +45,9 @@ class ProxyChatHandler:
                 logger.error("Failed to get a key from KeyManager. All keys might be in cooldown.")
                 raise HTTPException(status_code=503, detail="All API keys are currently unavailable.")
 
+            # --- ADDED LOGGING ---
+            logger.info(f"Attempt {attempt + 1}/{max_retries}: Using key {mask_key(api_key)} for model '{request.model}'.")
+
             headers = {
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json",
@@ -54,6 +57,8 @@ class ProxyChatHandler:
                 is_streaming = request.stream if hasattr(request, "stream") else False
 
                 if is_streaming:
+                    # --- ADDED LOGGING ---
+                    logger.info(f"Attempt {attempt + 1} succeeded. Starting stream with key {mask_key(api_key)}.")
                     return StreamingResponse(
                         self._streamer(request, headers),
                         media_type="text/event-stream",
@@ -66,6 +71,9 @@ class ProxyChatHandler:
                     headers=headers,
                 )
                 response.raise_for_status()
+
+                # --- ADDED LOGGING ---
+                logger.info(f"Attempt {attempt + 1} succeeded with key {mask_key(api_key)}.")
 
                 # Success! Return the response and exit the loop.
                 return ProxyChatResponse(completion=response.json())
