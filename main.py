@@ -31,8 +31,7 @@ from src.services.key_manager import KeyManager
 # Setup Jinja2 templates
 templates = Jinja2Templates(directory="templates")
 from metrics import (
-    CPU_USAGE, MEMORY_USAGE, ACTIVE_KEYS, COOLDOWN_KEYS,
-    TOKENS_SENT, TOKENS_RECEIVED
+    CPU_USAGE, MEMORY_USAGE, ACTIVE_KEYS, COOLDOWN_KEYS
 )
 
 @asynccontextmanager
@@ -100,8 +99,6 @@ async def metrics(request: Request):
         "memory_usage": f"{MEMORY_USAGE._value.get():.1f}" if PSUTIL_AVAILABLE else "N/A",
         "active_keys": int(ACTIVE_KEYS._value.get()),
         "cooldown_keys": int(COOLDOWN_KEYS._value.get()),
-        "tokens_sent": int(TOKENS_SENT._value.get()),
-        "tokens_received": int(TOKENS_RECEIVED._value.get()),
         "raw_metrics": metrics_data
     }
     return templates.TemplateResponse("metrics.html", context)
