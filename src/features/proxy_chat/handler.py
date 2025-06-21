@@ -4,19 +4,22 @@ import json
 from config import config, logger
 from fastapi.responses import StreamingResponse
 from .command import ProxyChatRequest, ProxyChatResponse
-from src.dependencies import get_http_client, get_key_manager
+from src.dependencies import get_http_client, get_key_manager, get_model_filter_service
 from src.services.key_manager import KeyManager
 from utils import mask_key
 from constants import RATE_LIMIT_ERROR_CODE
+from src.features.model_filter.service import ModelFilterService
 
 class ProxyChatHandler:
     def __init__(
         self,
         http_client: httpx.AsyncClient = Depends(get_http_client),
-        key_manager: KeyManager = Depends(get_key_manager)
+        key_manager: KeyManager = Depends(get_key_manager),
+        model_filter: ModelFilterService = Depends(get_model_filter_service)
     ):
         self._client = http_client
         self._key_manager = key_manager
+        self._model_filter = model_filter
 
     async def _stream_with_retries(self, request: ProxyChatRequest):
         """
@@ -77,6 +80,13 @@ class ProxyChatHandler:
         logger.error(f"All {max_retries} stream retry attempts failed. Last error: {last_error}")
 
     async def handle(self, request: ProxyChatRequest):
+        if config["openrouter"].get("free_only", False):
+            if not await self._model_filter.is_model_allowed(request.model):
+                raise HTTPException(
+                    status_code=403, # Forbidden
+                    detail=f"Proxy is configured for free models only. '{request.model}' is not a valid free model."
+                )
+
         is_streaming = request.stream if hasattr(request, "stream") else False
 
         if is_streaming:

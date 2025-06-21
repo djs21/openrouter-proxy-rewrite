@@ -21,6 +21,7 @@ from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 from config import config, logger
 from utils import get_local_ip
 from src.services.key_manager import KeyManager
+from src.features.model_filter.service import ModelFilterService
 
 # Setup Jinja2 templates
 templates = Jinja2Templates(directory="templates")
@@ -43,6 +44,9 @@ async def lifespan(app: FastAPI):
         strategy=config["openrouter"]["key_selection_strategy"],
         opts=config["openrouter"]["key_selection_opts"],
     )
+
+    app.state.model_filter_service = ModelFilterService(http_client=app.state.http_client)
+
     logger.info("Application startup complete")
     yield
     await app.state.http_client.aclose()
