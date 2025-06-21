@@ -31,16 +31,19 @@ from src.services.key_manager import KeyManager
 # Setup Jinja2 templates
 templates = Jinja2Templates(directory="templates")
 from metrics import (
-    CPU_USAGE, MEMORY_USAGE, ACTIVE_KEYS, COOLDOWN_KEYS, 
+    CPU_USAGE, MEMORY_USAGE, ACTIVE_KEYS, COOLDOWN_KEYS,
     TOKENS_SENT, TOKENS_RECEIVED
 )
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage application lifespan resources."""
     proxy_url = config["requestProxy"].get("url") if config["requestProxy"].get("enabled") else None
-    app.state.http_client = httpx.AsyncClient(timeout=600.0, proxies=proxy_url)
+    if proxy_url:
+        app.state.http_client = httpx.AsyncClient(timeout=600.0, proxies={"http://": proxy_url, "https://": proxy_url})
+    else:
+        app.state.http_client = httpx.AsyncClient(timeout=600.0)
+
     app.state.key_manager = KeyManager(
         keys=config["openrouter"]["keys"],
         cooldown_seconds=config["openrouter"]["rate_limit_cooldown"],
@@ -51,7 +54,6 @@ async def lifespan(app: FastAPI):
     yield
     await app.state.http_client.aclose()
     logger.info("Application shutdown complete")
-
 
 app = FastAPI(
     title="OpenRouter API Proxy",
@@ -67,13 +69,13 @@ from src.features.health_check.endpoints import router as health_check_router
 from utils import verify_access_key
 
 app.include_router(
-    list_models_router, 
-    prefix="/api/v1", 
+    list_models_router,
+    prefix="/api/v1",
     tags=["Proxy"]
 )
 app.include_router(
-    proxy_chat_router, 
-    prefix="/api/v1", 
+    proxy_chat_router,
+    prefix="/api/v1",
     dependencies=[Depends(verify_access_key)],
     tags=["Proxy"]
 )
@@ -91,15 +93,15 @@ async def metrics():
     key_manager: KeyManager = app.state.key_manager
     key_manager.update_metrics()
     metrics_data = generate_latest().decode('utf-8')
-    
+
     # Since we removed the request parameter, we use a dummy one for the template
     from fastapi import Request
     request = Request(scope={'type': 'http'})
-    
+
     context = {
         "request": request,
         "cpu_usage": f"{CPU_USAGE._value.get():.1f}" if PSUTIL_AVAILABLE else "N/A",
-        "memory_usage": f"{MEMORY_USAGE._value.get():.1f}" if PSUTIL_AVAILABLE else "N/A", 
+        "memory_usage": f"{MEMORY_USAGE._value.get():.1f}" if PSUTIL_AVAILABLE else "N/A",
         "active_keys": int(ACTIVE_KEYS._value.get()),
         "cooldown_keys": int(COOLDOWN_KEYS._value.get()),
         "tokens_sent": int(TOKENS_SENT._value.get()),
@@ -131,10 +133,10 @@ async def add_process_time(request: Request, call_next):
     response = await call_next(request)
     process_time = time.time() - start_time
     response.headers["X-Process-Time"] = str(process_time)
-    
+
     if "date" in response.headers:
         del response.headers["date"]
-    
+
     logger.info(
         "Request completed",
         extra={
@@ -159,15 +161,15 @@ if __name__ == "__main__":
     logger.warning("Starting OpenRouter Proxy on %s:%s", host, port)
     logger.warning("API URL: http://%s:%s/api/v1", display_host, port)
     logger.warning("Metrics: http://%s:%s/metrics", display_host, port)
-    
+
     log_config = uvicorn.config.LOGGING_CONFIG
     http_log_level = config["server"].get("http_log_level", "INFO").upper()
     log_config["loggers"]["uvicorn.access"]["level"] = http_log_level
-    
+
     uvicorn.run(
-        app, 
-        host=host, 
-        port=port, 
+        app,
+        host=host,
+        port=port,
         log_config=log_config,
         timeout_graceful_shutdown=30,
         server_header=False
