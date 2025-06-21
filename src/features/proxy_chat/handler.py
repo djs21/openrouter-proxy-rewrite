@@ -1,5 +1,6 @@
 from fastapi import Depends, HTTPException
 import httpx
+import json
 from config import config, logger
 from .command import ProxyChatRequest, ProxyChatResponse
 from src.dependencies import get_http_client, get_key_manager
@@ -27,24 +28,15 @@ class ProxyChatHandler:
             headers=headers
         )
 
-        # Check if the response is successful
-        if response.status_code != 200:
-            logger.error(f"Error from OpenRouter API: {response.status_code} - {response.text}")
-            raise HTTPException(status_code=response.status_code, detail=response.text)
-
-        # Check if the response content is not empty
-        if not response.content:
-            logger.error("Empty response from OpenRouter API")
-            raise HTTPException(status_code=500, detail="Empty response from OpenRouter API")
-
         try:
+            response.raise_for_status()  # Raises HTTPStatusError for 4xx/5xx responses
             return ProxyChatResponse(completion=response.json())
         except httpx.HTTPStatusError as e:
-            logger.error(f"HTTP error occurred: {e}")
-            raise
+            logger.error(f"HTTP error occurred from OpenRouter: {e.response.status_code} - {e.response.text}")
+            raise HTTPException(status_code=e.response.status_code, detail=e.response.text)
         except httpx.RequestError as e:
             logger.error(f"Request error occurred: {e}")
-            raise
-        except ValueError as e:
-            logger.error(f"JSON decoding error: {e}")
+            raise HTTPException(status_code=500, detail=f"Request to OpenRouter API failed: {e}")
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON decoding error from OpenRouter API: {e}. Response content: {response.text}")
             raise HTTPException(status_code=500, detail="Failed to parse response from OpenRouter API")
