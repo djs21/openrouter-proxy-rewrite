@@ -7,7 +7,7 @@ from fastapi import Request
 import httpx
 
 from src.services.key_manager import KeyManager
-from src.features.model_filter.service import ModelFilterService
+from src.services.model_filter_service import ModelFilterService
 
 def get_http_client(request: Request) -> httpx.AsyncClient:
     """Returns the shared httpx.AsyncClient instance."""

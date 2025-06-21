@@ -21,7 +21,7 @@ from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 from config import config, logger
 from utils import get_local_ip
 from src.services.key_manager import KeyManager
-from src.features.model_filter.service import ModelFilterService
+from src.services.model_filter_service import ModelFilterService
 
 # Setup Jinja2 templates
 templates = Jinja2Templates(directory="templates")

@@ -8,7 +8,7 @@ from src.dependencies import get_http_client, get_key_manager, get_model_filter_
 from src.services.key_manager import KeyManager
 from utils import mask_key
 from constants import RATE_LIMIT_ERROR_CODE
-from src.features.model_filter.service import ModelFilterService
+from src.services.model_filter_service import ModelFilterService
 
 class ProxyChatHandler:
     def __init__(
