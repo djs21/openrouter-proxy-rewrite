@@ -1,15 +1,14 @@
 from fastapi import APIRouter, Depends, Request
-from .command import ProxyChatRequest, ProxyChatResponse
+from fastapi.responses import StreamingResponse
+from .command import ProxyChatRequest
 from .handler import ProxyChatHandler
-from httpx import AsyncClient
-from src.services.key_manager import KeyManager
 
 router = APIRouter()
 
-@router.post("/chat/completions", response_model=ProxyChatResponse)
+@router.post("/chat/completions")
 async def proxy_chat(
     request: Request,
     chat_request: ProxyChatRequest,
     handler: ProxyChatHandler = Depends(ProxyChatHandler)
-):
+) -> StreamingResponse | dict:
     return await handler.handle(chat_request)
