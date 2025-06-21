@@ -11,12 +11,6 @@ from contextlib import asynccontextmanager
 
 import httpx
 import uvicorn
-try:
-    import psutil
-    PSUTIL_AVAILABLE = True
-except ImportError:
-    PSUTIL_AVAILABLE = False
-    psutil = None
 
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, Response
@@ -31,7 +25,7 @@ from src.services.key_manager import KeyManager
 # Setup Jinja2 templates
 templates = Jinja2Templates(directory="templates")
 from metrics import (
-    CPU_USAGE, MEMORY_USAGE, ACTIVE_KEYS, COOLDOWN_KEYS
+    ACTIVE_KEYS, COOLDOWN_KEYS
 )
 
 @asynccontextmanager
@@ -84,10 +78,6 @@ app.include_router(health_check_router, tags=["Monitoring"])
 @app.get("/metrics", response_class=HTMLResponse)
 async def metrics(request: Request):
     """Returns metrics in HTML table format by default"""
-    if config["server"].get("enable_system_metrics", False) and PSUTIL_AVAILABLE:
-        CPU_USAGE.set(psutil.cpu_percent())
-        MEMORY_USAGE.set(psutil.virtual_memory().percent)
-
     # We need to get the key_manager from app state
     key_manager: KeyManager = app.state.key_manager
     key_manager.update_metrics()
@@ -95,8 +85,6 @@ async def metrics(request: Request):
 
     context = {
         "request": request,
-        "cpu_usage": f"{CPU_USAGE._value.get():.1f}" if PSUTIL_AVAILABLE else "N/A",
-        "memory_usage": f"{MEMORY_USAGE._value.get():.1f}" if PSUTIL_AVAILABLE else "N/A",
         "active_keys": int(ACTIVE_KEYS._value.get()),
         "cooldown_keys": int(COOLDOWN_KEYS._value.get()),
         "raw_metrics": metrics_data

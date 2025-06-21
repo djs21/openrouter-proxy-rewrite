@@ -21,13 +21,15 @@
     <h2>Key Metrics</h2>
     <table>
         <tr><th>Metric</th><th>Value</th></tr>
-        <tr><td>CPU Usage</td><td>{{ cpu_usage }}%</td></tr>
-        <tr><td>Memory Usage</td><td>{{ memory_usage }}%</td></tr>
         <tr><td>Active API Keys</td><td>{{ active_keys }}</td></tr>
         <tr><td>Cooldown API Keys</td><td>{{ cooldown_keys }}</td></tr>
     </table>
 
-    <h2><a href="/metrics/raw">Raw Prometheus Metrics</a></h2>
-    <pre><code>{{ raw_metrics }}</code></pre>
+    <details style="margin-top: 2em;">
+        <summary style="cursor: pointer; font-size: 1.5em; font-weight: bold; color: #343a40;">
+            Show Raw Prometheus Metrics
+        </summary>
+        <pre><code>{{ raw_metrics }}</code></pre>
+    </details>
 </body>
 </html>
