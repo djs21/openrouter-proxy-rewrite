@@ -72,6 +72,20 @@ async def test_proxy_chat(client: httpx.AsyncClient, base_url: str, headers: Dic
         resp.raise_for_status()
         print("Chat completion received")
 
+async def test_proxy_chat_error(client: httpx.AsyncClient, base_url: str, headers: Dict[str, str]):
+    """Test Proxy Chat with an invalid model to trigger an error"""
+    print("Testing error handling for non-existent model...")
+    url = f"{base_url}/chat/completions"
+    request_data = {
+        "model": "this/model-does-not-exist",  # Invalid model
+        "messages": [{"role": "user", "content": "Hello!"}],
+        "stream": False,
+    }
+    resp = await client.post(url, headers=headers, json=request_data)
+    
+    assert resp.status_code != 200, f"Expected an error status code, but got 200. Body: {resp.text}"
+    print(f"Received expected error status: {resp.status_code}. Test passed.")
+
 async def test_key_management(client: httpx.AsyncClient, base_url: str, headers: Dict[str, str]):
     """Test Key Management features by ensuring multiple requests work"""
     # Make two requests to chat endpoint to test key rotation
@@ -104,6 +118,7 @@ async def run_tests():
     async with httpx.AsyncClient(timeout=60.0) as client:
         await test_feature("List Models", lambda: test_list_models(client, base_url))
         await test_feature("Proxy Chat", lambda: test_proxy_chat(client, base_url, headers))
+        await test_feature("Proxy Chat Error Handling", lambda: test_proxy_chat_error(client, base_url, headers))
         await test_feature("Key Management", lambda: test_key_management(client, base_url, headers))
 
 if __name__ == "__main__":

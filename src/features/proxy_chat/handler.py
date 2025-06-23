@@ -1,7 +1,7 @@
 # src/features/proxy_chat/handler.py
 from fastapi import Depends, HTTPException
 import httpx
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
 
 from src.shared.config import config
 from src.shared.dependencies import get_http_client, get_key_manager, get_model_filter_service
@@ -40,4 +40,5 @@ class ProxyChatHandler:
             )
 
         completion = await self._client.send_non_stream(request_data)
-        return ProxyChatResponse(completion=completion)
+        # REMOVE OLD LINE: return ProxyChatResponse(completion=completion)
+        return JSONResponse(content=completion) # USE THIS NEW LINE

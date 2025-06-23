@@ -40,8 +40,25 @@ class OpenRouterClient:
                     headers=headers,
                 )
                 response.raise_for_status()
+
+                # -- START EDITS --
+                response_json = response.json()
+                if "error" in response_json:
+                    error_details = response_json.get("error", {})
+                    logger.error(
+                        "OpenRouter returned success status but contains an error: %s",
+                        error_details
+                    )
+                    # Propagate this error as an HTTPException so it can be handled correctly
+                    raise httpx.HTTPStatusError(
+                        message=error_details.get("message", "Unknown error from OpenRouter."),
+                        request=response.request,
+                        response=response
+                    )
+                # -- END EDITS --
+
                 logger.info("Attempt %d succeeded with key %s.", attempt + 1, mask_key(api_key))
-                return response.json()
+                return response_json # Return the parsed JSON
             except httpx.HTTPStatusError as e:
                 last_error = e
                 if e.response.status_code == RATE_LIMIT_ERROR_CODE:
