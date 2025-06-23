@@ -22,6 +22,7 @@ from src.shared.config import config, logger
 from src.shared.utils import get_local_ip
 from src.services.key_manager import KeyManager
 from src.services.model_filter_service import ModelFilterService
+from src.features.proxy_chat.client import OpenRouterClient
 
 # Setup Jinja2 templates
 templates = Jinja2Templates(directory="templates")
@@ -46,6 +47,11 @@ async def lifespan(app: FastAPI):
     )
 
     app.state.model_filter_service = ModelFilterService(http_client=app.state.http_client)
+
+    app.state.openrouter_client = OpenRouterClient(
+        http_client=app.state.http_client,
+        key_manager=app.state.key_manager
+    )
 
     logger.info("Application startup complete")
     yield

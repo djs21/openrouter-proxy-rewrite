@@ -4,8 +4,7 @@ import httpx
 from fastapi.responses import StreamingResponse, JSONResponse
 
 from src.shared.config import config
-from src.shared.dependencies import get_http_client, get_key_manager, get_model_filter_service
-from src.services.key_manager import KeyManager
+from src.shared.dependencies import get_model_filter_service, get_openrouter_client
 from src.services.model_filter_service import ModelFilterService
 
 from .command import ProxyChatRequest, ProxyChatResponse
@@ -14,12 +13,11 @@ from .client import OpenRouterClient
 class ProxyChatHandler:
     def __init__(
         self,
-        http_client: httpx.AsyncClient = Depends(get_http_client),
-        key_manager: KeyManager = Depends(get_key_manager),
         model_filter: ModelFilterService = Depends(get_model_filter_service),
+        openrouter_client: OpenRouterClient = Depends(get_openrouter_client)
     ):
         self._model_filter = model_filter
-        self._client = OpenRouterClient(http_client, key_manager)
+        self._client = openrouter_client
 
     async def handle(self, request: ProxyChatRequest):
         if config["openrouter"].get("free_only", False):
@@ -40,5 +38,4 @@ class ProxyChatHandler:
             )
 
         completion = await self._client.send_non_stream(request_data)
-        # REMOVE OLD LINE: return ProxyChatResponse(completion=completion)
-        return JSONResponse(content=completion) # USE THIS NEW LINE
+        return JSONResponse(content=completion)
