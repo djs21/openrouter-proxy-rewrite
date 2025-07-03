@@ -11,7 +11,7 @@ env/
 .env
 .nenv
 conventions.md
-
+uv.lock
 # Python bytecode
 __pycache__/
 *.py[cod]
